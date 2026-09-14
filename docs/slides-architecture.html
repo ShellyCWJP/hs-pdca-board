@@ -1,0 +1,498 @@
+<title>PDCA Board のしくみ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --paper: #f4f6f8; --paper-2: #e9edf1; --ink: #1b2433; --ink-2: #4c5766; --muted: #7d8794; --line: #c9d1da;
+    --red: #d9483b; --red-soft: #f6d6d2; --teal: #2f7c8a; --teal-soft: #cfe6ea; --yellow: #f2c94c; --white: #ffffff;
+    --grid: rgba(27, 36, 51, 0.06);
+    /* サービスの色 */
+    --cf: #f6821f; --cf-soft: #fde7d3; --react: #149eca; --gh: #24292f; --ts: #3178c6; --vite: #9457eb; --tw: #38bdf8; --pnpm: #f69220; --tsq: #ef4444;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #151b24; --paper-2: #1d2532; --ink: #e9edf2; --ink-2: #b8c1cc; --muted: #8592a1; --line: #35404d;
+      --red: #ef6d5f; --red-soft: #4a2a27; --teal: #5fb3c1; --teal-soft: #1f3b41; --yellow: #e5c25a; --white: #202938;
+      --grid: rgba(233, 237, 242, 0.05); --cf-soft: #4a3320; --gh: #e9edf2;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #151b24; --paper-2: #1d2532; --ink: #e9edf2; --ink-2: #b8c1cc; --muted: #8592a1; --line: #35404d;
+    --red: #ef6d5f; --red-soft: #4a2a27; --teal: #5fb3c1; --teal-soft: #1f3b41; --yellow: #e5c25a; --white: #202938;
+    --grid: rgba(233, 237, 242, 0.05); --cf-soft: #4a3320; --gh: #e9edf2;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--paper);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px; color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.7;
+  }
+  .slide { min-height: 100vh; scroll-snap-align: start; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(24px, 5vw, 72px); padding: clamp(32px, 6vh, 72px) clamp(24px, 7vw, 120px); }
+  .slide.wide { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .slide.picture-right .pic { order: 2; }
+  .kicker { font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: .14em; color: var(--muted); margin: 0 0 12px; }
+  h1, h2 { text-wrap: balance; line-height: 1.25; margin: 0; }
+  h1 { font-size: clamp(38px, 6vw, 72px); font-weight: 900; }
+  h2 { font-size: clamp(30px, 4.2vw, 52px); font-weight: 900; }
+  .lead { font-size: clamp(20px, 2.2vw, 26px); color: var(--ink-2); margin: 20px 0 0; max-width: 24em; }
+  .note { font-size: 16px; color: var(--muted); margin: 24px 0 0; max-width: 30em; }
+  mark { background: linear-gradient(transparent 55%, var(--yellow) 55%); color: inherit; padding: 0 2px; }
+  .pic { width: 100%; max-width: 560px; justify-self: center; }
+  .pic svg { width: 100%; height: auto; display: block; }
+  .slide.wide .pic { max-width: 1000px; }
+  .big-list { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .big-list li { display: grid; grid-template-columns: 48px 1fr; gap: 14px; align-items: start; font-size: clamp(19px, 2vw, 24px); font-weight: 500; }
+  .big-list .ic { width: 48px; height: 48px; }
+  .big-list .ic svg { width: 48px; height: 48px; display: block; }
+  .big-list small { display: block; font-size: 15px; font-weight: 400; color: var(--muted); line-height: 1.5; }
+  .why { display: grid; gap: 10px; margin: 24px 0 0; }
+  .why div { background: var(--white); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 16px; font-size: 17px; }
+  .why b { display: block; font-size: 15px; color: var(--muted); font-weight: 500; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 28px; margin: 20px 0 0; font-size: 15px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 28px; height: 4px; border-radius: 2px; display: inline-block; }
+  .counter { position: fixed; right: 20px; bottom: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); background: var(--paper); padding: 4px 8px; border-radius: 6px; }
+  .hint { position: fixed; left: 20px; bottom: 16px; font-size: 13px; color: var(--muted); }
+  .dots { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: grid; gap: 8px; }
+  .dots a { width: 8px; height: 8px; border-radius: 50%; background: var(--line); display: block; }
+  .dots a.on { background: var(--ink); }
+  .dots a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  @media (max-width: 820px) {
+    .slide { grid-template-columns: 1fr; align-content: center; padding: 56px 24px; }
+    .slide.picture-right .pic { order: 0; }
+    .pic { max-width: 420px; }
+    .dots { display: none; }
+  }
+</style>
+
+<!-- アイコン定義（各サービスを表す簡略化した図形） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cloudflare" viewBox="0 0 64 64"><path d="M18 46h30a9 9 0 0 0 1.2-17.9A13 13 0 0 0 24.6 24 10 10 0 0 0 8 33.5 12.5 12.5 0 0 0 18 46z" fill="var(--cf)"/><path d="M24 46h24a9 9 0 0 0 1.2-17.9A13 13 0 0 0 30 24l-6 22z" fill="#fbad41"/></symbol>
+    <symbol id="i-worker" viewBox="0 0 64 64"><path d="M18 46h30a9 9 0 0 0 1.2-17.9A13 13 0 0 0 24.6 24 10 10 0 0 0 8 33.5 12.5 12.5 0 0 0 18 46z" fill="var(--cf)"/><circle cx="34" cy="36" r="7" fill="none" stroke="#fff" stroke-width="3"/><g stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="34" y1="24" x2="34" y2="27"/><line x1="34" y1="45" x2="34" y2="48"/><line x1="22" y1="36" x2="25" y2="36"/><line x1="43" y1="36" x2="46" y2="36"/></g></symbol>
+    <symbol id="i-d1" viewBox="0 0 64 64"><ellipse cx="32" cy="16" rx="20" ry="7" fill="#fbad41"/><path d="M12 16v32c0 3.9 9 7 20 7s20-3.1 20-7V16c0 3.9-9 7-20 7s-20-3.1-20-7z" fill="var(--cf)"/><path d="M12 30c0 3.9 9 7 20 7s20-3.1 20-7" fill="none" stroke="#fde7d3" stroke-width="2"/></symbol>
+    <symbol id="i-browser" viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="44" rx="6" fill="var(--white)" stroke="var(--ink)" stroke-width="3"/><line x1="6" y1="22" x2="58" y2="22" stroke="var(--ink)" stroke-width="3"/><circle cx="14" cy="16" r="2.2" fill="var(--ink)"/><circle cx="21" cy="16" r="2.2" fill="var(--ink)"/><rect x="14" y="30" width="24" height="5" rx="2" fill="var(--teal)"/><rect x="14" y="40" width="34" height="4" rx="2" fill="var(--line)"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 64 64"><rect x="12" y="14" width="40" height="28" rx="3" fill="var(--white)" stroke="var(--ink)" stroke-width="3"/><path d="M6 46h52l-4 6H10z" fill="var(--ink)"/><text x="32" y="34" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--teal)" text-anchor="middle">&gt;_</text></symbol>
+    <symbol id="i-github" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="var(--gh)"/><path d="M32 14a18 18 0 0 0-5.7 35.1c.9.2 1.2-.4 1.2-.9v-3.2c-5 1.1-6.1-2.1-6.1-2.1-.8-2.1-2-2.6-2-2.6-1.6-1.1.1-1.1.1-1.1 1.8.1 2.8 1.9 2.8 1.9 1.6 2.8 4.3 2 5.3 1.5.2-1.2.6-2 1.1-2.4-4-.5-8.2-2-8.2-8.9 0-2 .7-3.6 1.9-4.8-.2-.5-.8-2.3.2-4.8 0 0 1.5-.5 5 1.8a17 17 0 0 1 9 0c3.5-2.3 5-1.8 5-1.8 1 2.5.4 4.3.2 4.8 1.2 1.2 1.9 2.8 1.9 4.8 0 6.9-4.2 8.4-8.2 8.9.6.6 1.2 1.7 1.2 3.4v5c0 .5.3 1.1 1.2.9A18 18 0 0 0 32 14z" fill="var(--paper)"/></symbol>
+    <symbol id="i-react" viewBox="0 0 64 64"><g fill="none" stroke="var(--react)" stroke-width="2.5"><ellipse cx="32" cy="32" rx="24" ry="9"/><ellipse cx="32" cy="32" rx="24" ry="9" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="24" ry="9" transform="rotate(120 32 32)"/></g><circle cx="32" cy="32" r="4.5" fill="var(--react)"/></symbol>
+    <symbol id="i-tanstack" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="var(--tsq)"/><circle cx="32" cy="32" r="16" fill="#f97316"/><circle cx="32" cy="32" r="8" fill="#fde68a"/></symbol>
+    <symbol id="i-shadcn" viewBox="0 0 64 64"><rect x="8" y="8" width="48" height="48" rx="10" fill="var(--ink)"/><g stroke="var(--paper)" stroke-width="4" stroke-linecap="round"><line x1="22" y1="42" x2="42" y2="22"/><line x1="34" y1="46" x2="46" y2="34"/></g></symbol>
+    <symbol id="i-tailwind" viewBox="0 0 64 64"><path d="M32 18c-8 0-13 4-15 12 3-4 6.5-5.5 10.5-4.5 2.3.6 3.9 2.2 5.7 4 2.9 2.9 6.3 6.3 13.8 6.3 8 0 13-4 15-12-3 4-6.5 5.5-10.5 4.5-2.3-.6-3.9-2.2-5.7-4C42.9 21.4 39.5 18 32 18zM17 34c-8 0-13 4-15 12 3-4 6.5-5.5 10.5-4.5 2.3.6 3.9 2.2 5.7 4C21.1 48.4 24.5 52 32 52c8 0 13-4 15-12-3 4-6.5 5.5-10.5 4.5-2.3-.6-3.9-2.2-5.7-4C27.9 37.6 24.5 34 17 34z" fill="var(--tw)"/></symbol>
+    <symbol id="i-ts" viewBox="0 0 64 64"><rect x="8" y="8" width="48" height="48" rx="6" fill="var(--ts)"/><text x="32" y="41" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">TS</text></symbol>
+    <symbol id="i-vite" viewBox="0 0 64 64"><path d="M10 14l22 40 22-40-22 6z" fill="#bd34fe"/><path d="M36 10l-10 22h8l-4 18 14-26h-8l4-14z" fill="#ffd028"/></symbol>
+    <symbol id="i-pnpm" viewBox="0 0 64 64"><g fill="var(--pnpm)"><rect x="10" y="10" width="13" height="13"/><rect x="25.5" y="10" width="13" height="13"/><rect x="41" y="10" width="13" height="13"/><rect x="41" y="25.5" width="13" height="13"/></g><g fill="var(--ink)"><rect x="10" y="25.5" width="13" height="13"/><rect x="25.5" y="25.5" width="13" height="13"/><rect x="10" y="41" width="13" height="13"/><rect x="25.5" y="41" width="13" height="13"/><rect x="41" y="41" width="13" height="13"/></g></symbol>
+    <symbol id="i-drizzle" viewBox="0 0 64 64"><g stroke="#c5f74f" stroke-width="7" stroke-linecap="round"><line x1="14" y1="24" x2="26" y2="10"/><line x1="26" y1="40" x2="38" y2="26"/><line x1="38" y1="56" x2="50" y2="42"/><line x1="34" y1="22" x2="46" y2="8"/></g></symbol>
+    <symbol id="i-wrangler" viewBox="0 0 64 64"><rect x="6" y="12" width="52" height="40" rx="6" fill="var(--ink)"/><text x="16" y="38" font-family="IBM Plex Mono, monospace" font-size="16" fill="var(--cf)">$ wr</text></symbol>
+    <symbol id="i-claude" viewBox="0 0 64 64"><path d="M32 8l5 16 16 5-16 5-5 16-5-16-16-5 16-5z" fill="#d97757"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 64 64"><rect x="14" y="28" width="36" height="28" rx="6" fill="var(--ink)"/><path d="M22 28v-8a10 10 0 0 1 20 0v8" fill="none" stroke="var(--ink)" stroke-width="5"/><circle cx="32" cy="42" r="4" fill="var(--paper)"/></symbol>
+    <symbol id="i-cookie" viewBox="0 0 64 64"><path d="M32 8a24 24 0 1 0 24 24 8 8 0 0 1-9-8 8 8 0 0 1-8-9 24 24 0 0 0-7-7z" fill="#d8a25c"/><g fill="#7a4a1d"><circle cx="22" cy="28" r="3"/><circle cx="34" cy="40" r="3.5"/><circle cx="22" cy="44" r="2.5"/><circle cx="42" cy="30" r="2.5"/></g></symbol>
+  </defs>
+</svg>
+
+<!-- 1 -->
+<section class="slide wide" id="s1">
+  <div>
+    <p class="kicker">課題研究（情報）　サンプルアプリの記録 ②</p>
+    <h1>PDCA Board のしくみ</h1>
+    <p class="lead" style="margin-inline:auto">アプリはどこで動いて、データはどこにあるのか。<br>使った道具と、それぞれの役割、選んだ理由。</p>
+  </div>
+  <div class="pic" style="max-width:720px">
+    <svg viewBox="0 0 720 200" role="img" aria-label="ブラウザ、Cloudflare、データベースのアイコン">
+      <use href="#i-browser" x="60" y="40" width="120" height="120"/>
+      <use href="#i-worker" x="300" y="40" width="120" height="120"/>
+      <use href="#i-d1" x="540" y="40" width="120" height="120"/>
+      <g stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none"><path d="M200 100h80 M270 90l10 10-10 10"/><path d="M440 100h80 M510 90l10 10-10 10"/></g>
+    </svg>
+  </div>
+</section>
+
+<!-- 2 全体図 -->
+<section class="slide wide" id="s2">
+  <div>
+    <p class="kicker">全体図</p>
+    <h2>3 つの場所と、2 本の道</h2>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 1000 520" role="img" aria-label="ブラウザからCloudflare Workers、D1への流れと、開発PCからGitHubとCloudflareへの流れ">
+      <!-- 使う人のゾーン -->
+      <rect x="20" y="20" width="270" height="300" rx="16" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="155" y="54" font-size="18" font-weight="700" fill="var(--ink)" text-anchor="middle">使う人</text>
+      <use href="#i-browser" x="60" y="80" width="80" height="80"/>
+      <text x="100" y="185" font-size="15" fill="var(--ink-2)" text-anchor="middle">生徒</text>
+      <use href="#i-browser" x="170" y="80" width="80" height="80"/>
+      <text x="210" y="185" font-size="15" fill="var(--ink-2)" text-anchor="middle">先生</text>
+      <text x="155" y="230" font-size="14" fill="var(--muted)" text-anchor="middle">Chromebook・スマホ</text>
+      <text x="155" y="254" font-size="14" fill="var(--muted)" text-anchor="middle">ブラウザだけあればいい</text>
+
+      <!-- Cloudflare ゾーン -->
+      <rect x="380" y="20" width="600" height="300" rx="16" fill="var(--cf-soft)" stroke="var(--cf)" stroke-width="2"/>
+      <use href="#i-cloudflare" x="400" y="30" width="44" height="44"/>
+      <text x="452" y="58" font-size="18" font-weight="700" fill="var(--ink)">Cloudflare（インターネット上）</text>
+      <use href="#i-worker" x="450" y="100" width="100" height="100"/>
+      <text x="500" y="222" font-size="16" font-weight="700" fill="var(--ink)" text-anchor="middle">Workers</text>
+      <text x="500" y="244" font-size="14" fill="var(--ink-2)" text-anchor="middle">アプリ本体が動く</text>
+      <use href="#i-d1" x="780" y="100" width="100" height="100"/>
+      <text x="830" y="222" font-size="16" font-weight="700" fill="var(--ink)" text-anchor="middle">D1</text>
+      <text x="830" y="244" font-size="14" fill="var(--ink-2)" text-anchor="middle">記録を保存する</text>
+      <g stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+        <path d="M290 150h150 M430 140l10 10-10 10"/>
+        <path d="M560 150h210 M760 140l10 10-10 10"/>
+      </g>
+      <text x="365" y="136" font-size="13" fill="var(--muted)" text-anchor="middle">HTTPS</text>
+      <text x="665" y="136" font-size="13" fill="var(--muted)" text-anchor="middle">SQL</text>
+
+      <!-- 作る人のゾーン -->
+      <rect x="20" y="360" width="960" height="140" rx="16" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="40" y="392" font-size="18" font-weight="700" fill="var(--ink)">作る人</text>
+      <use href="#i-laptop" x="120" y="400" width="70" height="70"/>
+      <text x="155" y="492" font-size="14" fill="var(--ink-2)" text-anchor="middle">開発 PC</text>
+      <use href="#i-github" x="430" y="400" width="70" height="70"/>
+      <text x="465" y="492" font-size="14" fill="var(--ink-2)" text-anchor="middle">GitHub（コード置き場）</text>
+      <g stroke="var(--teal)" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="8 8">
+        <path d="M200 435h220 M410 425l10 10-10 10"/>
+        <path d="M200 420 C 300 340, 420 330, 470 300 M462 312l8-12-14 2"/>
+      </g>
+      <text x="310" y="425" font-size="13" fill="var(--teal)" text-anchor="middle">git push</text>
+      <text x="330" y="352" font-size="13" fill="var(--teal)" text-anchor="middle">wrangler deploy</text>
+    </svg>
+  </div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>使うときの道</span><span><i style="background:var(--teal)"></i>作るときの道</span></div>
+</section>
+
+<!-- 3 ブラウザ側 -->
+<section class="slide" id="s3">
+  <div>
+    <p class="kicker">場所 1：ブラウザ</p>
+    <h2>見える部分を作る道具</h2>
+    <ul class="big-list">
+      <li><span class="ic"><svg><use href="#i-react"/></svg></span><div>React<small>画面を部品の組み合わせで作る</small></div></li>
+      <li><span class="ic"><svg><use href="#i-tanstack"/></svg></span><div>TanStack Router<small>URL と画面を対応させる（/student、/teacher …）</small></div></li>
+      <li><span class="ic"><svg><use href="#i-shadcn"/></svg></span><div>shadcn/ui<small>ボタン・表・入力欄などの既製部品</small></div></li>
+      <li><span class="ic"><svg><use href="#i-tailwind"/></svg></span><div>Tailwind CSS<small>色や余白を、短い名前で指定する</small></div></li>
+    </ul>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 380" role="img" aria-label="画面が部品でできている図">
+      <rect x="30" y="20" width="500" height="340" rx="14" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <rect x="30" y="20" width="120" height="340" rx="14" fill="var(--paper-2)"/>
+      <g stroke="var(--react)" stroke-width="2" stroke-dasharray="6 5" fill="none">
+        <rect x="42" y="40" width="96" height="120" rx="8"/>
+        <rect x="170" y="50" width="340" height="60" rx="8"/>
+        <rect x="170" y="130" width="160" height="200" rx="8"/>
+        <rect x="350" y="130" width="160" height="200" rx="8"/>
+      </g>
+      <g font-size="13" fill="var(--react)"><text x="50" y="58">ナビ</text><text x="178" y="68">見出し</text><text x="178" y="148">表</text><text x="358" y="148">グラフ</text></g>
+      <g fill="var(--line)"><rect x="52" y="72" width="70" height="8" rx="4"/><rect x="52" y="92" width="60" height="8" rx="4"/><rect x="52" y="112" width="66" height="8" rx="4"/></g>
+      <rect x="186" y="80" width="140" height="14" rx="4" fill="var(--ink)"/>
+      <g fill="var(--line)"><rect x="186" y="170" width="120" height="8" rx="4"/><rect x="186" y="196" width="100" height="8" rx="4"/><rect x="186" y="222" width="126" height="8" rx="4"/><rect x="186" y="248" width="90" height="8" rx="4"/></g>
+      <polyline points="370,300 405,270 440,280 475,240 500,250" fill="none" stroke="var(--teal)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="280" y="352" font-size="13" fill="var(--muted)" text-anchor="middle">点線 1 つが React の「部品」</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 4 サーバー側 -->
+<section class="slide picture-right" id="s4">
+  <div>
+    <p class="kicker">場所 2：Cloudflare Workers</p>
+    <h2>裏で働く部分</h2>
+    <ul class="big-list">
+      <li><span class="ic"><svg><use href="#i-worker"/></svg></span><div>Cloudflare Workers<small>アプリのプログラムを、世界中の Cloudflare の拠点で動かす</small></div></li>
+      <li><span class="ic"><svg><use href="#i-tanstack"/></svg></span><div>TanStack Start<small>「保存」「ログイン」などの処理を、画面と同じコードの中に書ける</small></div></li>
+    </ul>
+    <p class="note">自分でサーバー機を用意しない。パソコンを閉じてもアプリは動き続ける。</p>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 360" role="img" aria-label="世界地図の上に Cloudflare の拠点が点在している">
+      <ellipse cx="280" cy="180" rx="240" ry="130" fill="var(--paper-2)"/>
+      <g fill="var(--cf)">
+        <circle cx="120" cy="140" r="9"/><circle cx="180" cy="220" r="9"/><circle cx="260" cy="120" r="9"/><circle cx="330" cy="200" r="9"/><circle cx="400" cy="130" r="9"/><circle cx="440" cy="230" r="9"/><circle cx="220" cy="270" r="9"/>
+      </g>
+      <use href="#i-worker" x="380" y="150" width="90" height="90"/>
+      <text x="425" y="262" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">近い拠点で動く</text>
+      <text x="280" y="340" font-size="14" fill="var(--muted)" text-anchor="middle">日本からのアクセスは日本の拠点が応える</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 5 データ -->
+<section class="slide" id="s5">
+  <div>
+    <p class="kicker">場所 3：Cloudflare D1</p>
+    <h2>記録をしまう場所</h2>
+    <ul class="big-list">
+      <li><span class="ic"><svg><use href="#i-d1"/></svg></span><div>Cloudflare D1<small>表の形でデータを保存するデータベース（中身は SQLite）</small></div></li>
+      <li><span class="ic"><svg><use href="#i-drizzle"/></svg></span><div>drizzle<small>表の形をプログラムで定義し、読み書きを書きやすくする</small></div></li>
+    </ul>
+    <p class="note">「並べる・数える・探す」が得意。達成率の平均もここで計算できる。</p>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 360" role="img" aria-label="6つの表がつながっている図">
+      <g font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">
+        <rect x="30" y="40" width="140" height="50" rx="8" fill="var(--white)" stroke="var(--line)" stroke-width="2"/><text x="100" y="70">users（人）</text>
+        <rect x="390" y="40" width="140" height="50" rx="8" fill="var(--white)" stroke="var(--line)" stroke-width="2"/><text x="460" y="70">lessons（授業回）</text>
+        <rect x="190" y="150" width="180" height="50" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/><text x="280" y="180">pdca_records（記録）</text>
+        <rect x="30" y="270" width="150" height="50" rx="8" fill="var(--white)" stroke="var(--line)" stroke-width="2"/><text x="105" y="300">plan_items</text>
+        <rect x="205" y="270" width="150" height="50" rx="8" fill="var(--white)" stroke="var(--line)" stroke-width="2"/><text x="280" y="300">extra_dos</text>
+        <rect x="380" y="270" width="150" height="50" rx="8" fill="var(--white)" stroke="var(--line)" stroke-width="2"/><text x="455" y="300">feedbacks</text>
+      </g>
+      <g stroke="var(--muted)" stroke-width="2" fill="none">
+        <path d="M100 90 L240 150"/><path d="M460 90 L320 150"/>
+        <path d="M240 200 L105 270"/><path d="M280 200 L280 270"/><path d="M320 200 L455 270"/>
+      </g>
+      <text x="280" y="345" font-size="13" fill="var(--muted)" text-anchor="middle">1 つの記録に、Plan 項目・追加の Do・先生のコメントがぶら下がる</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 6 ログイン -->
+<section class="slide picture-right" id="s6">
+  <div>
+    <p class="kicker">安全のしくみ</p>
+    <h2>パスワードは<br><mark>そのまま保存しない</mark></h2>
+    <ul class="big-list">
+      <li><span class="ic"><svg><use href="#i-lock"/></svg></span><div>ハッシュ化<small>元に戻せない形に変換してから保存。先生でも中身は見えない</small></div></li>
+      <li><span class="ic"><svg><use href="#i-cookie"/></svg></span><div>Cookie セッション<small>ログイン後は「合言葉」をブラウザが持ち、毎回の通信に添える</small></div></li>
+    </ul>
+    <p class="note">既製の認証サービスは使わず、自分で書いた。しくみを見せるため。</p>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 320" role="img" aria-label="パスワードがハッシュに変換されて保存される図">
+      <rect x="30" y="60" width="180" height="60" rx="10" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="120" y="97" font-family="IBM Plex Mono, monospace" font-size="18" fill="var(--ink)" text-anchor="middle">password</text>
+      <use href="#i-lock" x="250" y="55" width="70" height="70"/>
+      <g stroke="var(--ink)" stroke-width="3" stroke-linecap="round" fill="none"><path d="M215 90h30 M238 82l8 8-8 8"/><path d="M325 90h30 M348 82l8 8-8 8"/></g>
+      <rect x="365" y="60" width="170" height="60" rx="10" fill="var(--paper-2)" stroke="var(--line)" stroke-width="2"/>
+      <text x="450" y="90" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-2)" text-anchor="middle">a9f3…c21e</text>
+      <text x="450" y="108" font-size="12" fill="var(--muted)" text-anchor="middle">これを D1 に保存</text>
+      <path d="M450 130 v40" stroke="var(--ink)" stroke-width="3" stroke-dasharray="5 5"/>
+      <use href="#i-d1" x="415" y="175" width="70" height="70"/>
+      <text x="120" y="200" font-size="15" fill="var(--ink-2)" text-anchor="middle">ログインのたびに</text>
+      <text x="120" y="224" font-size="15" fill="var(--ink-2)" text-anchor="middle">同じ変換をして比べる</text>
+      <text x="280" y="300" font-size="13" fill="var(--muted)" text-anchor="middle">逆向きの矢印は存在しない</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 7 保存ボタンの旅 -->
+<section class="slide wide" id="s7">
+  <div>
+    <p class="kicker">1 回の操作が通る道</p>
+    <h2>「保存」を押すと、何が起きる？</h2>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 1000 300" role="img" aria-label="ブラウザからWorkers、D1へ行き、結果が戻ってくる流れ">
+      <use href="#i-browser" x="60" y="60" width="110" height="110"/>
+      <use href="#i-worker" x="445" y="60" width="110" height="110"/>
+      <use href="#i-d1" x="830" y="60" width="110" height="110"/>
+      <g font-size="15" font-weight="700" fill="var(--ink)" text-anchor="middle"><text x="115" y="200">ブラウザ</text><text x="500" y="200">Workers</text><text x="885" y="200">D1</text></g>
+      <g stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+        <path d="M190 95h235 M415 85l10 10-10 10"/><path d="M575 95h235 M800 85l10 10-10 10"/>
+      </g>
+      <g stroke="var(--teal)" stroke-width="4" stroke-linecap="round" fill="none">
+        <path d="M810 135h-235 M585 125l-10 10 10 10"/><path d="M425 135h-235 M200 125l-10 10 10 10"/>
+      </g>
+      <g font-size="13" text-anchor="middle">
+        <text x="307" y="80" fill="var(--ink)">① 入力内容を送る</text>
+        <text x="692" y="80" fill="var(--ink)">② 権限を確認して SQL で書く</text>
+        <text x="692" y="160" fill="var(--teal)">③ 書けた</text>
+        <text x="307" y="160" fill="var(--teal)">④ 達成率を計算して返す</text>
+      </g>
+      <text x="500" y="260" font-size="15" fill="var(--muted)" text-anchor="middle">「自分の記録か」「編集していい状態か」は必ず Workers 側で確かめる。ブラウザ側の見た目だけでは守れない。</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 8 開発の道具 -->
+<section class="slide" id="s8">
+  <div>
+    <p class="kicker">作るときの道具</p>
+    <h2>手元のパソコンで使ったもの</h2>
+    <ul class="big-list">
+      <li><span class="ic"><svg><use href="#i-ts"/></svg></span><div>TypeScript<small>型でミスを実行前に見つける</small></div></li>
+      <li><span class="ic"><svg><use href="#i-vite"/></svg></span><div>Vite<small>書いたそばから画面に反映する開発サーバー</small></div></li>
+      <li><span class="ic"><svg><use href="#i-pnpm"/></svg></span><div>pnpm<small>ライブラリの取り寄せと、コマンドの実行</small></div></li>
+      <li><span class="ic"><svg><use href="#i-wrangler"/></svg></span><div>wrangler<small>Cloudflare に置く・D1 を操作する</small></div></li>
+      <li><span class="ic"><svg><use href="#i-github"/></svg></span><div>GitHub<small>コードの履歴と置き場</small></div></li>
+      <li><span class="ic"><svg><use href="#i-claude"/></svg></span><div>Claude Code<small>要件の整理からコードまで、AI と相談しながら進めた</small></div></li>
+    </ul>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 380" role="img" aria-label="手元のPCで開発サーバーとローカルDBが動く図">
+      <rect x="40" y="40" width="480" height="300" rx="16" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="60" y="74" font-size="16" font-weight="700" fill="var(--ink)">開発 PC の中</text>
+      <use href="#i-vite" x="80" y="110" width="90" height="90"/>
+      <text x="125" y="226" font-size="14" fill="var(--ink-2)" text-anchor="middle">開発サーバー</text>
+      <text x="125" y="246" font-size="12" fill="var(--muted)" text-anchor="middle">localhost:3000</text>
+      <use href="#i-d1" x="330" y="110" width="90" height="90"/>
+      <text x="375" y="226" font-size="14" fill="var(--ink-2)" text-anchor="middle">ローカル D1</text>
+      <text x="375" y="246" font-size="12" fill="var(--muted)" text-anchor="middle">.wrangler/ の中の SQLite</text>
+      <path d="M180 155h140 M310 145l10 10-10 10" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <text x="280" y="310" font-size="14" fill="var(--muted)" text-anchor="middle">本番と同じしくみを、手元でそっくり動かして試す</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 9 なぜ Cloudflare -->
+<section class="slide picture-right" id="s9">
+  <div>
+    <p class="kicker">選んだ理由 1</p>
+    <h2>なぜ Cloudflare？</h2>
+    <div class="why">
+      <div><b>サーバー機を持たなくていい</b>プログラムを置くだけ。OS の更新や電源の心配がない</div>
+      <div><b>無料枠で足りる</b>1 クラス分のアクセスなら、費用はかからない</div>
+      <div><b>アプリと DB が同じ場所</b>Workers と D1 がセットで使えて、設定が少ない</div>
+      <div><b>公開が 1 コマンド</b>wrangler deploy で URL が出る</div>
+    </div>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 320" role="img" aria-label="自前サーバーと Cloudflare の比較">
+      <rect x="30" y="40" width="230" height="240" rx="14" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="145" y="74" font-size="16" font-weight="700" fill="var(--muted)" text-anchor="middle">自分でサーバーを持つ</text>
+      <g fill="var(--paper-2)" stroke="var(--line)" stroke-width="2"><rect x="95" y="100" width="100" height="26" rx="4"/><rect x="95" y="132" width="100" height="26" rx="4"/><rect x="95" y="164" width="100" height="26" rx="4"/></g>
+      <g font-size="12" fill="var(--muted)" text-anchor="middle"><text x="145" y="220">電源・更新・故障</text><text x="145" y="240">全部じぶんで</text></g>
+      <rect x="300" y="40" width="230" height="240" rx="14" fill="var(--cf-soft)" stroke="var(--cf)" stroke-width="2"/>
+      <text x="415" y="74" font-size="16" font-weight="700" fill="var(--ink)" text-anchor="middle">Cloudflare に置く</text>
+      <use href="#i-cloudflare" x="365" y="95" width="100" height="100"/>
+      <g font-size="12" fill="var(--ink-2)" text-anchor="middle"><text x="415" y="220">プログラムを置くだけ</text><text x="415" y="240">世話は Cloudflare</text></g>
+    </svg>
+  </div>
+</section>
+
+<!-- 10 なぜ TanStack Start -->
+<section class="slide" id="s10">
+  <div>
+    <p class="kicker">選んだ理由 2</p>
+    <h2>なぜ TanStack Start？</h2>
+    <div class="why">
+      <div><b>画面と裏の処理を 1 つのコードで</b>「保存する関数」を書けば、ブラウザからそのまま呼べる</div>
+      <div><b>React が使える</b>参考資料が多く、部品（shadcn/ui）もそのまま使える</div>
+      <div><b>Cloudflare Workers で動く</b>公式の設定がある</div>
+    </div>
+    <p class="note">同じ役割の道具に Next.js もある。今回は「Workers との相性」と「しくみの見えやすさ」で選んだ。</p>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 320" role="img" aria-label="画面のコードとサーバーのコードが1つのファイルにある図">
+      <rect x="60" y="30" width="440" height="260" rx="12" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
+      <text x="80" y="60" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--muted)">records.ts</text>
+      <rect x="80" y="80" width="400" height="80" rx="8" fill="var(--cf-soft)"/>
+      <text x="96" y="106" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">saveDo = createServerFn(…)</text>
+      <text x="96" y="130" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink-2)">  // Workers で動く：権限チェック → D1 に保存</text>
+      <rect x="80" y="180" width="400" height="80" rx="8" fill="var(--teal-soft)"/>
+      <text x="96" y="206" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">&lt;Button onClick={() =&gt; saveDo(…)}&gt;</text>
+      <text x="96" y="230" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink-2)">  // ブラウザで動く：ボタンを押したら呼ぶ</text>
+      <text x="280" y="310" font-size="13" fill="var(--muted)" text-anchor="middle">通信の細かい書き方は道具が肩代わりする</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 11 なぜ shadcn/ui -->
+<section class="slide picture-right" id="s11">
+  <div>
+    <p class="kicker">選んだ理由 3</p>
+    <h2>なぜ shadcn/ui？</h2>
+    <div class="why">
+      <div><b>部品のコードが手元に来る</b>ダウンロードして使うのではなく、コピーして自分のものにする。中を読める・直せる</div>
+      <div><b>必要な部品だけ</b>ボタン、表、入力欄、ダイアログ、グラフ。11 個だけ入れた</div>
+      <div><b>Tailwind と相性がいい</b>色や余白をその場で調整できる</div>
+    </div>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 560 320" role="img" aria-label="部品のコードをプロジェクトにコピーする図">
+      <rect x="30" y="60" width="200" height="200" rx="12" fill="var(--paper-2)" stroke="var(--line)" stroke-width="2"/>
+      <text x="130" y="92" font-size="14" font-weight="700" fill="var(--muted)" text-anchor="middle">shadcn/ui の部品棚</text>
+      <g fill="var(--white)" stroke="var(--line)" stroke-width="1.5">
+        <rect x="50" y="110" width="50" height="30" rx="6"/><rect x="110" y="110" width="50" height="30" rx="6"/><rect x="170" y="110" width="40" height="30" rx="6"/>
+        <rect x="50" y="150" width="50" height="30" rx="6"/><rect x="110" y="150" width="50" height="30" rx="6"/><rect x="170" y="150" width="40" height="30" rx="6"/>
+        <rect x="50" y="190" width="50" height="30" rx="6"/><rect x="110" y="190" width="50" height="30" rx="6"/><rect x="170" y="190" width="40" height="30" rx="6"/>
+      </g>
+      <rect x="110" y="110" width="50" height="30" rx="6" fill="var(--teal)"/>
+      <rect x="50" y="150" width="50" height="30" rx="6" fill="var(--teal)"/>
+      <path d="M245 160h60 M295 150l10 10-10 10" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <text x="275" y="140" font-size="12" fill="var(--muted)" text-anchor="middle">コピー</text>
+      <rect x="330" y="60" width="200" height="200" rx="12" fill="var(--white)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="430" y="92" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">自分のプロジェクト</text>
+      <text x="350" y="120" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--muted)">src/components/ui/</text>
+      <g fill="var(--teal)"><rect x="350" y="135" width="60" height="30" rx="6"/><rect x="420" y="135" width="60" height="30" rx="6"/></g>
+      <text x="430" y="200" font-size="13" fill="var(--ink-2)" text-anchor="middle">中身を読める</text>
+      <text x="430" y="222" font-size="13" fill="var(--ink-2)" text-anchor="middle">好きに直せる</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 12 公開までの流れ -->
+<section class="slide wide" id="s12">
+  <div>
+    <p class="kicker">公開までの流れ</p>
+    <h2>手元 → GitHub → Cloudflare</h2>
+  </div>
+  <div class="pic">
+    <svg viewBox="0 0 1000 300" role="img" aria-label="開発PC、GitHub、Cloudflare、公開URLの順の流れ">
+      <use href="#i-laptop" x="50" y="50" width="110" height="110"/>
+      <use href="#i-github" x="330" y="50" width="110" height="110"/>
+      <use href="#i-cloudflare" x="610" y="50" width="110" height="110"/>
+      <use href="#i-browser" x="860" y="50" width="110" height="110"/>
+      <g font-size="15" font-weight="700" fill="var(--ink)" text-anchor="middle">
+        <text x="105" y="195">手元で作る</text><text x="385" y="195">GitHub に残す</text><text x="665" y="195">Cloudflare に置く</text><text x="915" y="195">URL で使える</text>
+      </g>
+      <g font-size="13" fill="var(--muted)" text-anchor="middle">
+        <text x="105" y="220">pnpm dev で確認</text><text x="385" y="220">git push</text><text x="665" y="220">pnpm deploy</text><text x="915" y="220">workers.dev</text>
+      </g>
+      <g stroke="var(--teal)" stroke-width="4" stroke-linecap="round" fill="none">
+        <path d="M175 105h140 M305 95l10 10-10 10"/><path d="M455 105h140 M585 95l10 10-10 10"/><path d="M735 105h110 M835 95l10 10-10 10"/>
+      </g>
+      <text x="500" y="275" font-size="14" fill="var(--muted)" text-anchor="middle">DB の表の形も同じ順で送る：手元の D1 で試す → 本番の D1 に適用（pnpm db:migrate:remote）</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 13 まとめ -->
+<section class="slide wide" id="s13">
+  <div>
+    <p class="kicker">まとめ</p>
+    <h2>役割ごとに道具は 1 つ。<mark>少なく選ぶ</mark></h2>
+    <p class="lead" style="margin-inline:auto">画面・裏の処理・データ・置き場所。<br>それぞれに 1 つずつ。増やすのは、困ってからでいい。</p>
+  </div>
+  <div class="pic" style="max-width:900px">
+    <svg viewBox="0 0 900 200" role="img" aria-label="役割と道具の対応">
+      <g font-size="14" fill="var(--muted)" text-anchor="middle"><text x="112" y="40">画面</text><text x="337" y="40">裏の処理</text><text x="562" y="40">データ</text><text x="787" y="40">置き場所</text></g>
+      <use href="#i-react" x="72" y="60" width="80" height="80"/>
+      <use href="#i-tanstack" x="297" y="60" width="80" height="80"/>
+      <use href="#i-d1" x="522" y="60" width="80" height="80"/>
+      <use href="#i-cloudflare" x="747" y="60" width="80" height="80"/>
+      <g font-size="15" font-weight="700" fill="var(--ink)" text-anchor="middle"><text x="112" y="175">React + shadcn/ui</text><text x="337" y="175">TanStack Start</text><text x="562" y="175">Cloudflare D1</text><text x="787" y="175">Cloudflare Workers</text></g>
+    </svg>
+  </div>
+</section>
+
+<nav class="dots" aria-label="スライド">
+  <a href="#s1"></a><a href="#s2"></a><a href="#s3"></a><a href="#s4"></a><a href="#s5"></a><a href="#s6"></a><a href="#s7"></a>
+  <a href="#s8"></a><a href="#s9"></a><a href="#s10"></a><a href="#s11"></a><a href="#s12"></a><a href="#s13"></a>
+</nav>
+<div class="hint">← → / スペース で進む</div>
+<div class="counter" id="counter">1 / 13</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'))
+  const dots = Array.from(document.querySelectorAll('.dots a'))
+  const counter = document.getElementById('counter')
+  let current = 0
+  function go(i) { current = Math.max(0, Math.min(slides.length - 1, i)); slides[current].scrollIntoView({ block: 'start' }) }
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); go(current + 1) }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(current - 1) }
+    if (e.key === 'Home') go(0)
+    if (e.key === 'End') go(slides.length - 1)
+  })
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) if (en.isIntersecting) {
+      current = slides.indexOf(en.target)
+      counter.textContent = `${current + 1} / ${slides.length}`
+      dots.forEach((d, i) => d.classList.toggle('on', i === current))
+    }
+  }, { threshold: 0.6 })
+  slides.forEach((s) => io.observe(s))
+</script>
