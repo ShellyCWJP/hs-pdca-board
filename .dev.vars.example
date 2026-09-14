@@ -1,0 +1,2 @@
+# ローカル開発用。コピーして .dev.vars を作る（.dev.vars は git 管理外）
+SESSION_SECRET=change-me-to-a-long-random-string

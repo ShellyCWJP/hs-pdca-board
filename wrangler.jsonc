@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pdca-board",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pdca-board",
+      // 本番 D1 の ID（pnpm wrangler d1 create pdca-board で作成）。ローカル開発では .wrangler/ 配下の SQLite が使われる。
+      "database_id": "7b0b89c5-8845-42ad-ac03-10aa60004635",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}
