@@ -117,10 +117,11 @@
   <div>
     <p class="kicker">課題研究（情報）　サンプルアプリの記録</p>
     <h1>PDCA Board ができるまで</h1>
-    <p class="lead" style="margin-inline:auto">紙の記録用紙を、ひとつのアプリにした話。<br>「何に困って」「何を決めて」「どう作ったか」。</p>
+    <p class="lead" style="margin-inline:auto">みんなが毎回書いている PDCA の紙を題材に、<br>「どう考えて」「何を決めて」「どう作るか」を見せるためのサンプルアプリの話。</p>
+    <p class="note" style="margin-inline:auto">紙の記録はこれからも続けます。アプリに置き換えるための話ではありません。</p>
   </div>
   <div class="pic">
-    <svg viewBox="0 0 900 300" role="img" aria-label="紙の記録用紙からアプリ画面へ">
+    <svg viewBox="0 0 900 300" role="img" aria-label="紙の記録用紙と、それを題材にしたアプリ画面">
       <g transform="translate(60 40)">
         <rect x="0" y="0" width="200" height="220" rx="6" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
         <rect x="18" y="22" width="90" height="10" rx="3" fill="var(--teal)"/>
@@ -132,8 +133,7 @@
         <rect x="18" y="152" width="120" height="6" rx="3" fill="var(--line)"/>
         <path d="M22 190 q30 -18 60 0 t60 0 t40 -6" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
       </g>
-      <path d="M330 150 h180" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none"/>
-      <path d="M490 130 l30 20 l-30 20" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M380 150 h70 M415 115 v70" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" fill="none"/>
       <g transform="translate(560 30)">
         <rect x="0" y="0" width="300" height="240" rx="14" fill="var(--white)" stroke="var(--line)" stroke-width="2"/>
         <rect x="0" y="0" width="80" height="240" rx="14" fill="var(--paper-2)"/>
@@ -152,8 +152,8 @@
 <!-- 2. 毎回やっていること -->
 <section class="slide" id="s2">
   <div>
-    <p class="kicker">いま</p>
-    <h2>毎回の授業で、紙に書いている</h2>
+    <p class="kicker">題材</p>
+    <h2>毎回の授業で書いている PDCA</h2>
     <ul class="big-list">
       <li><span class="n teal">前</span><div>Plan<small>今日の目標・予定</small></div></li>
       <li><span class="n teal">後</span><div>Do と Check/Act<small>やったこと・結果、振り返り・次回の課題</small></div></li>
@@ -188,9 +188,9 @@
 <!-- 3. 困りごと1 -->
 <section class="slide picture-right" id="s3">
   <div>
-    <p class="kicker">困りごと 1</p>
-    <h2>Plan と Do が<br><mark>つながらない</mark></h2>
-    <p class="lead">目標を 3 つ書いても、Do は文章でまとめて書く。<br>「どれができて、どれができなかったか」が読めない。</p>
+    <p class="kicker">こうだったら、もっと良いかも 1</p>
+    <h2>Plan と Do を<br><mark>1 つずつ</mark>つなげたい</h2>
+    <p class="lead">目標を 3 つ書いたとき、Do は文章でまとめて書くことが多い。<br>「どれができて、どれが残ったか」が、ひと目で分かると振り返りやすい。</p>
   </div>
   <div class="pic">
     <svg viewBox="0 0 560 340" role="img" aria-label="Plan の3項目と、まとめて書かれた Do">
@@ -213,7 +213,7 @@
         <path d="M250 164 q30 -20 60 10"/>
         <path d="M250 224 q30 -60 60 -40"/>
       </g>
-      <text x="280" y="290" font-size="40" font-weight="900" fill="var(--red)" text-anchor="middle">?</text>
+      <text x="280" y="290" font-size="34" font-weight="700" fill="var(--muted)" text-anchor="middle">?</text>
     </svg>
   </div>
 </section>
@@ -221,9 +221,9 @@
 <!-- 4. 困りごと2 -->
 <section class="slide" id="s4">
   <div>
-    <p class="kicker">困りごと 2</p>
-    <h2>成長が<br><mark>見えない</mark></h2>
-    <p class="lead">紙は回を重ねるほど積み上がる。<br>「前より計画どおりに進められているか」は、めくっても分からない。</p>
+    <p class="kicker">こうだったら、もっと良いかも 2</p>
+    <h2>成長を<br><mark>線で見たい</mark></h2>
+    <p class="lead">紙は回を重ねるほど、読み返す価値が増えていく。<br>「前より計画どおりに進められているか」を、グラフでも眺められたら楽しい。</p>
   </div>
   <div class="pic">
     <svg viewBox="0 0 560 340" role="img" aria-label="積み上がった紙の山と疑問符">
@@ -239,7 +239,7 @@
         <rect x="180" y="100" width="120" height="6" rx="3"/><rect x="180" y="114" width="80" height="6" rx="3"/>
       </g>
       <path d="M190 60 q40 -20 60 8" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
-      <text x="470" y="140" font-size="64" font-weight="900" fill="var(--muted)">?</text>
+      <polyline points="450,150 475,135 500,140 525,110" fill="none" stroke="var(--teal)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><g fill="var(--teal)"><circle cx="450" cy="150" r="5"/><circle cx="475" cy="135" r="5"/><circle cx="500" cy="140" r="5"/><circle cx="525" cy="110" r="5"/></g>
       <text x="280" y="325" font-size="16" fill="var(--muted)" text-anchor="middle">第1回 … 第12回</text>
     </svg>
   </div>
@@ -249,24 +249,24 @@
 <section class="slide wide" id="s5">
   <div>
     <p class="kicker">いちばん大事な考え方</p>
-    <h2>困りごとが先。アプリは後。</h2>
-    <p class="lead" style="margin-inline:auto">「アプリを作りたい」から始めない。<br>「これが不便」を言葉にしてから、解決の手段としてアプリを選ぶ。</p>
+    <h2>「こうだったら良いな」が先。アプリは後。</h2>
+    <p class="lead" style="margin-inline:auto">「アプリを作りたい」から始めない。<br>「こうなったら嬉しい」を言葉にしてから、手段のひとつとしてアプリを選ぶ。</p>
   </div>
   <div class="pic">
     <svg viewBox="0 0 900 200" role="img" aria-label="困りごと、言葉にする、解決策の順">
       <g font-size="22" font-weight="700" fill="var(--ink)" text-anchor="middle">
         <rect x="40" y="60" width="220" height="80" rx="40" fill="var(--red-soft)"/>
-        <text x="150" y="108">困りごと</text>
+        <text x="150" y="108">こうなったら嬉しい</text>
         <rect x="340" y="60" width="220" height="80" rx="40" fill="var(--yellow)"/>
         <text x="450" y="108" fill="#1b2433">言葉にする</text>
         <rect x="640" y="60" width="220" height="80" rx="40" fill="var(--teal-soft)"/>
-        <text x="750" y="108">解決策</text>
+        <text x="750" y="108">手段を選ぶ</text>
       </g>
       <g stroke="var(--ink)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="M270 100 h50 M305 86 l15 14 l-15 14"/>
         <path d="M570 100 h50 M605 86 l15 14 l-15 14"/>
       </g>
-      <text x="750" y="170" font-size="15" fill="var(--muted)" text-anchor="middle">今回はたまたま「アプリ」だった</text>
+      <text x="750" y="170" font-size="15" fill="var(--muted)" text-anchor="middle">今回は練習として「アプリ」を選んだ</text>
     </svg>
   </div>
 </section>
@@ -520,7 +520,7 @@
   <div>
     <p class="kicker">やらないことを決める</p>
     <h2>小さく作る</h2>
-    <p class="lead">「あったら便利」は全部あとまわし。<br>困りごとを解決する最小限だけ作る。</p>
+    <p class="lead">「あったら便利」は全部あとまわし。<br>やりたいことに直結する最小限だけ作る。</p>
     <div class="chips">
       <span class="chip no">複数クラス・年度</span>
       <span class="chip no">パスワード再設定メール</span>
@@ -536,7 +536,7 @@
       <text x="60" y="66" font-size="15" fill="var(--muted)">思いついた機能ぜんぶ</text>
       <rect x="190" y="110" width="180" height="120" rx="12" fill="var(--teal)"/>
       <text x="280" y="164" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">最初に作る</text>
-      <text x="280" y="192" font-size="14" fill="#e6f4f6" text-anchor="middle">困りごとに直結する分だけ</text>
+      <text x="280" y="192" font-size="14" fill="#e6f4f6" text-anchor="middle">やりたいことに直結する分だけ</text>
     </svg>
   </div>
 </section>
@@ -549,7 +549,7 @@
     <p class="lead" style="margin-inline:auto">コードを書いたのは 3 番目から。最初の 2 つは文章だけ。</p>
   </div>
   <div class="steps">
-    <div class="step done"><div class="k">STEP 1</div><div class="t">要件定義書</div><div class="d">困りごと・目的・誰が使う・やらないこと</div></div>
+    <div class="step done"><div class="k">STEP 1</div><div class="t">要件定義書</div><div class="d">やりたいこと・目的・誰が使う・やらないこと</div></div>
     <div class="step done"><div class="k">STEP 2</div><div class="t">仕様書</div><div class="d">データの形・画面・計算ルール</div></div>
     <div class="step done"><div class="k">STEP 3</div><div class="t">雛形</div><div class="d">ログインだけ動く土台</div></div>
     <div class="step done"><div class="k">STEP 4</div><div class="t">実装</div><div class="d">先生の画面 → 生徒の画面の順</div></div>
@@ -562,13 +562,13 @@
 <section class="slide wide" id="s16">
   <div>
     <p class="kicker">まとめ</p>
-    <h2>アプリ開発は、<mark>困りごとを言葉にする</mark>ことから</h2>
+    <h2>アプリ開発は、<mark>やりたいことを言葉にする</mark>ことから</h2>
     <ul class="big-list" style="text-align:left; max-width: 34em; margin-inline:auto">
-      <li><span class="n">1</span><div>困りごとを見つける<small>「なんとなく不便」を、具体的に</small></div></li>
+      <li><span class="n">1</span><div>「こうだったら良いな」を見つける<small>「なんとなく」を、具体的に</small></div></li>
       <li><span class="n">2</span><div>言葉にして、決める<small>目的・使う人・ルール・やらないこと</small></div></li>
       <li><span class="n">3</span><div>小さく作って、使ってもらう<small>足りない所は使ってから分かる</small></div></li>
     </ul>
-    <p class="note" style="margin-inline:auto">君たちの課題研究も、同じ順番でいい。</p>
+    <p class="note" style="margin-inline:auto">君たちの課題研究も、同じ順番でいい。<br>紙の PDCA はこれまでどおり。このアプリは「作り方の見本」として使ってください。</p>
   </div>
 </section>
 
